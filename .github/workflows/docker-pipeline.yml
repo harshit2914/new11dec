@@ -1,0 +1,25 @@
+name: Docker Pipeline
+
+# Trigger pipeline on every push
+on: [push]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout your code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Build Docker image
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.harshit2914 }}/learn-pipeline:latest .
+
+      # Step 3: Login to Docker Hub
+      - name: Login to DockerHub
+        run: echo ${{ secrets.H@rshit_1 }} | docker login -u ${{ secrets.harshit2914 }} --password-stdin
+
+      # Step 4: Push Docker image to Docker Hub
+      - name: Push Image
+        run: docker push ${{ secrets.harshit2914 }}/learn-pipeline:latest
