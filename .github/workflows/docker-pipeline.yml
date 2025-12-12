@@ -1,25 +1,44 @@
-name: Docker Pipeline
+name: CI-CD Pipeline
 
-# Trigger pipeline on every push
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout your code from GitHub
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker image
-      - name: Build Docker Image
-        run: docker build -t ${{ secrets.harshit2914 }}/learn-pipeline:latest .
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.HARSHIT2914 }}
+          password: ${{ secrets.HARSHITAG1}}
 
-      # Step 3: Login to Docker Hub
-      - name: Login to DockerHub
-        run: echo ${{ secrets.H@rshit_1 }} | docker login -u ${{ secrets.harshit2914 }} --password-stdin
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.HARSHIT2914 }}/flowcycle:latest .
 
-      # Step 4: Push Docker image to Docker Hub
-      - name: Push Image
-        run: docker push ${{ secrets.harshit2914 }}/learn-pipeline:latest
+      # Push Docker image
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.HARSHIT2914 }}/flowcycle:latest
+
+      # SSH into EC2 and redeploy
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.HARSHIT2914 }}/flowcycle:latest
+            docker stop flowcycle || true
+            docker rm flowcycle || true
+            docker run -d -p 80:8000 --name flowcycle ${{ secrets.HARSHIT2914 }}/flowcycle:latest
